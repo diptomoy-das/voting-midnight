@@ -1,0 +1,119 @@
+// Voting DApp — Midnight Compact Contract
+// SPDX-License-Identifier: Apache-2.0
+//
+// Privacy model:
+//   PUBLIC  — proposal title, vote counts per option, total votes cast, voting status,
+//             nullifier set (commitments — not linked to identities).
+//   PRIVATE — the voter's secret key; used inside ZK to derive a nullifier.
+//
+// What users prove without revealing:
+//   - They possess the secret key corresponding to their nullifier.
+//   - Their nullifier has not been registered before (no double-voting).
+//   The vote *choice* is publicly submitted (vote tallies are public); only
+//   the voter's *identity* is kept private via the ZK-derived nullifier.
+
+pragma language_version 0.23;
+
+import CompactStandardLibrary;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Public ledger state
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Whether the vote is still accepting ballots.
+export enum VotingStatus {
+  OPEN,
+  CLOSED
+}
+
+/// The proposal title stored on-chain (opaque UTF-8 string).
+export ledger proposalTitle: Opaque<"string">;
+
+/// Current voting status.
+export ledger status: VotingStatus;
+
+/// Tally for each option.
+export ledger votesA: Counter;
+export ledger votesB: Counter;
+export ledger votesC: Counter;
+
+/// Total ballots cast.
+export ledger totalVotes: Counter;
+
+/// Nullifier set — prevents double-voting.
+/// Each entry is a hash commitment of (secretKey) so the voter cannot be identified.
+export ledger nullifiers: Set<Bytes<32>>;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Constructor
+// ─────────────────────────────────────────────────────────────────────────────
+
+constructor(title: Opaque<"string">) {
+  proposalTitle = disclose(title);
+  status = VotingStatus.OPEN;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Private witness — the voter's local secret key (never leaves the prover)
+// ─────────────────────────────────────────────────────────────────────────────
+witness localSecretKey(): Bytes<32>;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Helper — derives a unique nullifier from the voter's secret key.
+// ─────────────────────────────────────────────────────────────────────────────
+export circuit deriveNullifier(sk: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<2, Bytes<32>>>([pad(32, "voting:nul:"), sk]);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// castA — cast a vote for Option A
+// ─────────────────────────────────────────────────────────────────────────────
+export circuit castA(): [] {
+  assert(status == VotingStatus.OPEN, "Voting is closed");
+
+  const sk = localSecretKey();
+  const nul = disclose(deriveNullifier(sk));
+  assert(!nullifiers.member(nul), "Already voted");
+  nullifiers.insert(nul);
+
+  votesA.increment(1);
+  totalVotes.increment(1);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// castB — cast a vote for Option B
+// ─────────────────────────────────────────────────────────────────────────────
+export circuit castB(): [] {
+  assert(status == VotingStatus.OPEN, "Voting is closed");
+
+  const sk = localSecretKey();
+  const nul = disclose(deriveNullifier(sk));
+  assert(!nullifiers.member(nul), "Already voted");
+  nullifiers.insert(nul);
+
+  votesB.increment(1);
+  totalVotes.increment(1);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// castC — cast a vote for Option C
+// ─────────────────────────────────────────────────────────────────────────────
+export circuit castC(): [] {
+  assert(status == VotingStatus.OPEN, "Voting is closed");
+
+  const sk = localSecretKey();
+  const nul = disclose(deriveNullifier(sk));
+  assert(!nullifiers.member(nul), "Already voted");
+  nullifiers.insert(nul);
+
+  votesC.increment(1);
+  totalVotes.increment(1);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// closeVoting — closes the poll
+// ─────────────────────────────────────────────────────────────────────────────
+export circuit closeVoting(): [] {
+  assert(status == VotingStatus.OPEN, "Voting is already closed");
+  status = VotingStatus.CLOSED;
+}
