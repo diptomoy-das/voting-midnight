@@ -8,6 +8,9 @@
   "engines": {
     "node": ">=24.11.1"
   },
+  "scripts": {
+    "build": "npm run build --workspace=@midnight-ntwrk/voting-contract && npm run build --workspace=@midnight-ntwrk/voting-api && npm run build --workspace=@midnight-ntwrk/voting-ui"
+  },
   "workspaces": {
     "packages": [
       "voting-cli",
