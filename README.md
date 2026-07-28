@@ -4,6 +4,14 @@
 
 ---
 
+## 🎬 Demo Video
+
+[![Watch Demo Video](https://img.shields.io/badge/Watch%20Demo-Google%20Drive-blue?style=for-the-badge&logo=googledrive)](https://drive.google.com/file/d/1V0KsX3oDozOsDymn0wP-z1Kwc5ehR40A/view?usp=sharing)
+
+📹 **[Watch the VoteDApp Video Walkthrough on Google Drive](https://drive.google.com/file/d/1V0KsX3oDozOsDymn0wP-z1Kwc5ehR40A/view?usp=sharing)**
+
+---
+
 ## Contract Address
 
 > **⚠️ Deployment is intentionally skipped. Fill this in after you deploy.**
