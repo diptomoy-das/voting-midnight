@@ -42,8 +42,8 @@ const App: React.FC = () => {
             Private Voting on Midnight
           </Typography>
           <Typography variant="body1" sx={{ color: '#9CA3AF', maxWidth: 560, mx: 'auto', mb: 2 }}>
-            Cast your ballot anonymously using zero-knowledge proofs. The vote tally is public;
-            your identity stays private on the Midnight blockchain.
+            Cast your ballot anonymously using zero-knowledge proofs. The vote tally is public; your identity stays
+            private on the Midnight blockchain.
           </Typography>
           <Box
             sx={{

@@ -6,4 +6,4 @@ export const CONTRACT_ADDRESS = '<YOUR_DEPLOYED_CONTRACT_ADDRESS>';
 
 // Supported networks
 export const SUPPORTED_NETWORKS = ['preprod', 'preview'] as const;
-export type SupportedNetwork = typeof SUPPORTED_NETWORKS[number];
+export type SupportedNetwork = (typeof SUPPORTED_NETWORKS)[number];

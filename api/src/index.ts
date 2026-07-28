@@ -21,7 +21,6 @@ import { CompiledVotingContractContract } from '../../contract/src/index';
 import * as utils from './utils/index.js';
 import { deployContract, findDeployedContract } from '@midnight-ntwrk/midnight-js-contracts';
 import { combineLatest, map, tap, from, type Observable } from 'rxjs';
-import { toHex } from '@midnight-ntwrk/midnight-js-utils';
 import { VotingPrivateState, createVotingPrivateState } from '../../contract/src/witnesses.js';
 import { pureCircuits } from '../../contract/src/managed/voting/contract/index.js';
 
@@ -70,23 +69,21 @@ export class VotingAPI implements DeployedVotingAPI {
     this.state$ = combineLatest(
       [
         // Public ledger state observable
-        providers.publicDataProvider
-          .contractStateObservable(this.deployedContractAddress, { type: 'latest' })
-          .pipe(
-            map((contractState) => Voting.ledger(contractState.data)),
-            tap((ls) =>
-              logger?.trace({
-                ledgerState: {
-                  title: ls.proposalTitle,
-                  status: ls.status,
-                  votesA: ls.votesA.toString(),
-                  votesB: ls.votesB.toString(),
-                  votesC: ls.votesC.toString(),
-                  totalVotes: ls.totalVotes.toString(),
-                },
-              }),
-            ),
+        providers.publicDataProvider.contractStateObservable(this.deployedContractAddress, { type: 'latest' }).pipe(
+          map((contractState) => Voting.ledger(contractState.data)),
+          tap((ls) =>
+            logger?.trace({
+              ledgerState: {
+                title: ls.proposalTitle,
+                status: ls.status,
+                votesA: ls.votesA.toString(),
+                votesB: ls.votesB.toString(),
+                votesC: ls.votesC.toString(),
+                totalVotes: ls.totalVotes.toString(),
+              },
+            }),
           ),
+        ),
         // Private state (read once — the secret key never changes)
         from(providers.privateStateProvider.get(votingPrivateStateKey) as Promise<VotingPrivateState>),
       ],
@@ -140,11 +137,7 @@ export class VotingAPI implements DeployedVotingAPI {
   /**
    * Deploys a new Voting DApp contract with the given proposal title.
    */
-  static async deploy(
-    providers: VotingProviders,
-    proposalTitle: string,
-    logger?: Logger,
-  ): Promise<VotingAPI> {
+  static async deploy(providers: VotingProviders, proposalTitle: string, logger?: Logger): Promise<VotingAPI> {
     logger?.info({ deployContract: { proposalTitle } });
 
     const deployedContract = await deployContract(providers, {
@@ -162,11 +155,7 @@ export class VotingAPI implements DeployedVotingAPI {
   /**
    * Joins an already-deployed Voting DApp contract.
    */
-  static async join(
-    providers: VotingProviders,
-    contractAddress: ContractAddress,
-    logger?: Logger,
-  ): Promise<VotingAPI> {
+  static async join(providers: VotingProviders, contractAddress: ContractAddress, logger?: Logger): Promise<VotingAPI> {
     logger?.info({ joinContract: { contractAddress } });
 
     const deployedContract = await findDeployedContract<VotingContract>(providers, {

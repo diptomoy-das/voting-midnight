@@ -13,7 +13,6 @@ import { WebSocket } from 'ws';
 import {
   VotingAPI,
   type VotingDerivedState,
-  votingPrivateStateKey,
   type VotingProviders,
   type DeployedVotingContract,
   type PrivateStateId,
@@ -59,11 +58,7 @@ You can do one of the following:
   3. Exit
 Which would you like to do? `;
 
-const deployOrJoin = async (
-  providers: VotingProviders,
-  rli: Interface,
-  logger: Logger,
-): Promise<VotingAPI | null> => {
+const deployOrJoin = async (providers: VotingProviders, rli: Interface, logger: Logger): Promise<VotingAPI | null> => {
   while (true) {
     const choice = await rli.question(DEPLOY_OR_JOIN_QUESTION);
     switch (choice) {
@@ -75,7 +70,7 @@ const deployOrJoin = async (
       }
       case '2': {
         const addr = await rli.question('Contract address (hex): ');
-        const api = await VotingAPI.join(providers, addr as ContractAddress, logger);
+        const api = await VotingAPI.join(providers, addr, logger);
         logger.info(`Joined contract at address: ${api.deployedContractAddress}`);
         return api;
       }
@@ -251,9 +246,7 @@ export const run = async (config: Config, testEnv: TestEnvironment, logger: Logg
       }
     }
 
-    const zkConfigProvider = new NodeZkConfigProvider<'castA' | 'castB' | 'castC' | 'closeVoting'>(
-      config.zkConfigPath,
-    );
+    const zkConfigProvider = new NodeZkConfigProvider<'castA' | 'castB' | 'castC' | 'closeVoting'>(config.zkConfigPath);
 
     const providers: VotingProviders = {
       privateStateProvider: levelPrivateStateProvider<PrivateStateId, VotingPrivateState>({

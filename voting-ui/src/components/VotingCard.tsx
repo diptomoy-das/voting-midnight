@@ -184,7 +184,7 @@ const EmptyVotingCard: React.FC<EmptyVotingCardProps> = ({ onDeployCallback, onJ
         variant="outlined"
         fullWidth
         disabled={!address.trim()}
-        onClick={() => onJoinCallback(address.trim() as ContractAddress)}
+        onClick={() => onJoinCallback(address.trim())}
         sx={{
           borderColor: alpha('#10B981', 0.5),
           color: '#10B981',
@@ -270,9 +270,7 @@ export const VotingCard: React.FC<Readonly<VotingCardProps>> = ({ votingDeployme
     setIsWorking(false);
 
     if (votingDeployment.status === 'failed') {
-      setErrorMessage(
-        votingDeployment.error.message.length ? votingDeployment.error.message : 'Unexpected error.',
-      );
+      setErrorMessage(votingDeployment.error.message.length ? votingDeployment.error.message : 'Unexpected error.');
       return;
     }
 
@@ -335,9 +333,7 @@ export const VotingCard: React.FC<Readonly<VotingCardProps>> = ({ votingDeployme
       </Backdrop>
 
       {/* Empty card — no deployment yet */}
-      {!votingDeployment$ && (
-        <EmptyVotingCard onDeployCallback={onDeployCallback} onJoinCallback={onJoinCallback} />
-      )}
+      {!votingDeployment$ && <EmptyVotingCard onDeployCallback={onDeployCallback} onJoinCallback={onJoinCallback} />}
 
       {/* Deployed card */}
       {votingDeployment$ && (

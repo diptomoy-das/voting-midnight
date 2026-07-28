@@ -58,10 +58,7 @@ export interface FailedVotingDeployment {
   readonly error: Error;
 }
 
-export type VotingDeployment =
-  | InProgressVotingDeployment
-  | DeployedVotingDeployment
-  | FailedVotingDeployment;
+export type VotingDeployment = InProgressVotingDeployment | DeployedVotingDeployment | FailedVotingDeployment;
 
 // ─── Provider interface ───────────────────────────────────────────────────────
 
@@ -114,10 +111,7 @@ export class BrowserDeployedVotingManager implements DeployedVotingAPIProvider {
     return this.#initializedProviders ?? (this.#initializedProviders = initializeProviders(this.logger));
   }
 
-  private async deployDeployment(
-    deployment: BehaviorSubject<VotingDeployment>,
-    proposalTitle: string,
-  ): Promise<void> {
+  private async deployDeployment(deployment: BehaviorSubject<VotingDeployment>, proposalTitle: string): Promise<void> {
     try {
       const providers = await this.getProviders();
       const api = await VotingAPI.deploy(providers, proposalTitle, this.logger);

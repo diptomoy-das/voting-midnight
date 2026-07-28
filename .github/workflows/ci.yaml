@@ -53,12 +53,12 @@ jobs:
         run: |
           npm run ci
 
-      - name: Compile bboard-cli
-        working-directory: bboard-cli
+      - name: Compile voting-cli
+        working-directory: voting-cli
         run: |
           npm run ci
 
-      - name: Compile bboard-ui
-        working-directory: bboard-ui
+      - name: Compile voting-ui
+        working-directory: voting-ui
         run: |
           npm run ci

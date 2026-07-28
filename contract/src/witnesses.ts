@@ -11,8 +11,8 @@
  * recovered without the secret key.
  */
 
-import { Ledger } from './managed/voting/contract/index.js';
-import { WitnessContext } from '@midnight-ntwrk/midnight-js-protocol/compact-runtime';
+import { Ledger } from "./managed/voting/contract/index.js";
+import { WitnessContext } from "@midnight-ntwrk/midnight-js-protocol/compact-runtime";
 
 /**
  * The private state for the Voting DApp.
@@ -34,8 +34,8 @@ export const createVotingPrivateState = (secretKey: Uint8Array) => ({
 export const witnesses = {
   localSecretKey: ({
     privateState,
-  }: WitnessContext<Ledger, VotingPrivateState>): [VotingPrivateState, Uint8Array] => [
-    privateState,
-    privateState.secretKey,
-  ],
+  }: WitnessContext<Ledger, VotingPrivateState>): [
+    VotingPrivateState,
+    Uint8Array,
+  ] => [privateState, privateState.secretKey],
 };
