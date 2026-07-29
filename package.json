@@ -16,7 +16,8 @@
       "voting-cli",
       "voting-ui",
       "api",
-      "contract"
+      "contract",
+      "packages/*"
     ]
   },
   "dependencies": {
