@@ -199,12 +199,33 @@ const COMPATIBLE_CONNECTOR_API_VERSION = '4.x';
 
 const getFirstCompatibleWallet = (): InitialAPI | undefined => {
   if (!window.midnight) return undefined;
-  return Object.values(window.midnight).find(
-    (wallet): wallet is InitialAPI =>
-      !!wallet &&
-      typeof wallet === 'object' &&
-      'apiVersion' in wallet &&
-      semver.satisfies(wallet.apiVersion, COMPATIBLE_CONNECTOR_API_VERSION),
+  const midnightObj = window.midnight as Record<string, InitialAPI>;
+
+  const semverMatch = Object.values(midnightObj).find(
+    (w) =>
+      !!w &&
+      typeof w === 'object' &&
+      'connect' in w &&
+      'apiVersion' in w &&
+      typeof w.apiVersion === 'string' &&
+      semver.satisfies(w.apiVersion, COMPATIBLE_CONNECTOR_API_VERSION),
+  );
+  if (semverMatch) return semverMatch;
+
+  const broadMatch = Object.values(midnightObj).find(
+    (w) =>
+      !!w &&
+      typeof w === 'object' &&
+      'connect' in w &&
+      'apiVersion' in w &&
+      typeof w.apiVersion === 'string' &&
+      semver.satisfies(w.apiVersion, '>=0.1.0'),
+  );
+  if (broadMatch) return broadMatch;
+
+  return Object.values(midnightObj).find(
+    (w): w is InitialAPI =>
+      !!w && typeof w === 'object' && 'connect' in w && typeof (w as unknown as { connect: unknown }).connect === 'function',
   );
 };
 
@@ -218,11 +239,11 @@ const connectToWallet = (logger: Logger, networkId: string): Promise<ConnectedAP
       tap((api) => logger.info(api, 'Compatible wallet connector API found. Connecting.')),
       take(1),
       timeout({
-        first: 1_000,
+        first: 5_000,
         with: () =>
           throwError(() => {
             logger.error('Could not find wallet connector API');
-            return new Error('Could not find Midnight Lace wallet. Extension installed?');
+            return new Error('Could not find Midnight wallet. Extension installed and enabled?');
           }),
       }),
       concatMap(async (initialAPI) => {
@@ -232,11 +253,11 @@ const connectToWallet = (logger: Logger, networkId: string): Promise<ConnectedAP
         return connectedAPI;
       }),
       timeout({
-        first: 5_000,
+        first: 30_000,
         with: () =>
           throwError(() => {
             logger.error('Wallet connector API has failed to respond');
-            return new Error('Midnight Lace wallet has failed to respond. Extension enabled?');
+            return new Error('Midnight wallet has failed to respond. Check popup approval.');
           }),
       }),
       catchError((error, apis) =>

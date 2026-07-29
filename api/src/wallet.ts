@@ -33,18 +33,40 @@ export const getLaceWalletAPI = (): InitialAPI | undefined => {
   const globalObj = globalThis as unknown as { window?: { midnight?: Record<string, InitialAPI> } };
   const midnight = globalObj.window?.midnight;
   if (!midnight) return undefined;
+
+  // 1. Standard semver match
+  const semverMatch = Object.values(midnight).find(
+    (w) =>
+      !!w &&
+      typeof w === 'object' &&
+      'connect' in w &&
+      'apiVersion' in w &&
+      typeof w.apiVersion === 'string' &&
+      semver.satisfies(w.apiVersion, COMPATIBLE_CONNECTOR_API_VERSION),
+  );
+  if (semverMatch) return semverMatch;
+
+  // 2. Broad semver match (any version >= 0.1.0)
+  const broadMatch = Object.values(midnight).find(
+    (w) =>
+      !!w &&
+      typeof w === 'object' &&
+      'connect' in w &&
+      'apiVersion' in w &&
+      typeof w.apiVersion === 'string' &&
+      semver.satisfies(w.apiVersion, '>=0.1.0'),
+  );
+  if (broadMatch) return broadMatch;
+
+  // 3. Fallback match for any object with a connect function
   return Object.values(midnight).find(
-    (wallet): wallet is InitialAPI =>
-      !!wallet &&
-      typeof wallet === 'object' &&
-      'apiVersion' in wallet &&
-      typeof wallet.apiVersion === 'string' &&
-      semver.satisfies(wallet.apiVersion, COMPATIBLE_CONNECTOR_API_VERSION),
+    (w): w is InitialAPI =>
+      !!w && typeof w === 'object' && 'connect' in w && typeof (w as unknown as { connect: unknown }).connect === 'function',
   );
 };
 
 /**
- * Connects to the Midnight Lace wallet extension using the DApp Connector API.
+ * Connects to the Midnight Lace / 1AM wallet extension using the DApp Connector API.
  */
 export const connectLaceWallet = async (
   logger?: Logger,
@@ -52,14 +74,28 @@ export const connectLaceWallet = async (
 ): Promise<ConnectedAPI> => {
   const wallet = getLaceWalletAPI();
   if (!wallet) {
-    logger?.error('Midnight Lace wallet extension not found in browser');
-    throw new Error('Midnight Lace wallet extension not found. Please install the extension.');
+    logger?.error('Midnight wallet extension not found in browser');
+    throw new Error('Midnight 1AM / Lace wallet extension not found. Please install and enable the browser extension.');
   }
 
-  logger?.info({ networkId }, 'Initiating connection to Midnight Lace Wallet');
-  const connectedAPI = await wallet.connect(networkId);
+  logger?.info({ networkId }, 'Initiating connection to Midnight Wallet');
+
+  const connectPromise = wallet.connect(networkId);
+  const timeoutPromise = new Promise<never>((_, reject) =>
+    setTimeout(
+      () =>
+        reject(
+          new Error(
+            'Wallet connection request timed out. Please check if the extension popup window is waiting for authorization.',
+          ),
+        ),
+      30000,
+    ),
+  );
+
+  const connectedAPI = await Promise.race([connectPromise, timeoutPromise]);
   const status = await connectedAPI.getConnectionStatus();
-  logger?.info({ status }, 'Connected to Midnight Lace Wallet successfully');
+  logger?.info({ status }, 'Connected to Midnight Wallet successfully');
 
   return connectedAPI;
 };

@@ -21,22 +21,34 @@ export const WalletConnect: React.FC = () => {
   const [shieldedAddress, setShieldedAddress] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // Auto-detect wallet presence on mount
+  // Auto-detect wallet presence on mount or window load
   useEffect(() => {
-    const wallet = getLaceWalletAPI();
-    if (!wallet) {
-      setErrorMsg('Midnight 1AM extension not detected');
-    }
+    const checkWallet = () => {
+      const wallet = getLaceWalletAPI();
+      if (wallet) {
+        setErrorMsg(null);
+      } else {
+        setErrorMsg('Midnight 1AM / Lace extension not detected');
+      }
+    };
+    checkWallet();
+    const intervalId = setInterval(checkWallet, 1000);
+    return () => clearInterval(intervalId);
   }, []);
 
   const handleConnect = useCallback(async () => {
     setStatus('connecting');
     setErrorMsg(null);
     try {
-      const api = await connectLaceWallet(undefined, 'preprod');
+      const netId = (import.meta.env.VITE_NETWORK_ID as string) || 'preprod';
+      const api = await connectLaceWallet(undefined, netId);
       setConnectedAPI(api);
-      const addresses = await api.getShieldedAddresses();
-      setShieldedAddress(addresses.shieldedCoinPublicKey);
+      try {
+        const addresses = await api.getShieldedAddresses();
+        setShieldedAddress(addresses.shieldedCoinPublicKey);
+      } catch (addrErr) {
+        console.warn('Could not retrieve shielded address:', addrErr);
+      }
       setStatus('connected');
     } catch (err) {
       setStatus('error');
