@@ -4,11 +4,13 @@
 
 ---
 
-## 🎬 Demo Video
+## 🎬 Demo Video & Live Web App
 
 [![Watch Demo Video](https://img.shields.io/badge/Watch%20Demo-Google%20Drive-blue?style=for-the-badge&logo=googledrive)](https://drive.google.com/file/d/1V0KsX3oDozOsDymn0wP-z1Kwc5ehR40A/view?usp=sharing)
+[![Live Web Demo](https://img.shields.io/badge/Live%20Demo-Vercel-success?style=for-the-badge&logo=vercel)](https://votedapp-midnight.vercel.app)
 
-📹 **[Watch the VoteDApp Video Walkthrough on Google Drive](https://drive.google.com/file/d/1V0KsX3oDozOsDymn0wP-z1Kwc5ehR40A/view?usp=sharing)**
+- 📹 **[Watch the VoteDApp Video Walkthrough on Google Drive](https://drive.google.com/file/d/1V0KsX3oDozOsDymn0wP-z1Kwc5ehR40A/view?usp=sharing)**
+- 🌐 **[Access the Live VoteDApp Web Application](https://votedapp-midnight.vercel.app)**
 
 ---
 
@@ -78,7 +80,7 @@ No one — not even the contract deployer — can determine which voter cast whi
 | ZK Proof System | Midnight built-in (circuit-per-vote design) |
 | Frontend | React 19 + MUI v9 + Vite |
 | CLI | Node.js + TypeScript |
-| Wallet | Midnight Lace (DApp Connector API v4.x) |
+| Wallet & Connector | Midnight Lace (`@midnight-ntwrk/dapp-connector-api` + `@midnight-ntwrk/midnight-js-network-provider`) |
 | State streaming | RxJS |
 | Private state | In-memory provider (browser) / LevelDB (CLI) |
 | Build tooling | npm workspaces + TypeScript |

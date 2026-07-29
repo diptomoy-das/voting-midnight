@@ -8,7 +8,11 @@
 
 import { type MidnightProviders } from '@midnight-ntwrk/midnight-js-types';
 import { type FoundContract } from '@midnight-ntwrk/midnight-js-contracts';
+import type { ConnectedAPI, InitialAPI } from '@midnight-ntwrk/dapp-connector-api';
+import type { MidnightNetworkProvider } from '@midnight-ntwrk/midnight-js-network-provider';
 import type { VotingStatus, VotingPrivateState, Contract, Witnesses } from '../../contract/src/index';
+
+export type { ConnectedAPI, InitialAPI, MidnightNetworkProvider };
 
 export const votingPrivateStateKey = 'votingPrivateState';
 export type PrivateStateId = typeof votingPrivateStateKey;

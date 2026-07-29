@@ -9,6 +9,8 @@
 import * as Voting from '../../contract/src/managed/voting/contract/index.js';
 
 import { type ContractAddress } from '@midnight-ntwrk/midnight-js-protocol/compact-runtime';
+import type { ConnectedAPI, InitialAPI } from '@midnight-ntwrk/dapp-connector-api';
+import type { MidnightNetworkProvider } from '@midnight-ntwrk/midnight-js-network-provider';
 import { type Logger } from 'pino';
 import {
   type VotingDerivedState,
@@ -23,6 +25,13 @@ import { deployContract, findDeployedContract } from '@midnight-ntwrk/midnight-j
 import { combineLatest, map, tap, from, type Observable } from 'rxjs';
 import { VotingPrivateState, createVotingPrivateState } from '../../contract/src/witnesses.js';
 import { pureCircuits } from '../../contract/src/managed/voting/contract/index.js';
+import {
+  callCastACircuit,
+  callCastBCircuit,
+  callCastCCircuit,
+  callCloseVotingCircuit,
+  type ProofProgressCallback,
+} from './circuit-calls.js';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Public API interface
@@ -35,14 +44,14 @@ export interface DeployedVotingAPI {
   readonly deployedContractAddress: ContractAddress;
   readonly state$: Observable<VotingDerivedState>;
 
-  /** Cast a vote for Option A. */
-  castA: () => Promise<void>;
-  /** Cast a vote for Option B. */
-  castB: () => Promise<void>;
-  /** Cast a vote for Option C. */
-  castC: () => Promise<void>;
-  /** Close the voting poll. */
-  closeVoting: () => Promise<void>;
+  /** Cast a vote for Option A using zero-knowledge circuit execution. */
+  castA: (onProgress?: ProofProgressCallback) => Promise<void>;
+  /** Cast a vote for Option B using zero-knowledge circuit execution. */
+  castB: (onProgress?: ProofProgressCallback) => Promise<void>;
+  /** Cast a vote for Option C using zero-knowledge circuit execution. */
+  castC: (onProgress?: ProofProgressCallback) => Promise<void>;
+  /** Close the voting poll using zero-knowledge circuit execution. */
+  closeVoting: (onProgress?: ProofProgressCallback) => Promise<void>;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -108,28 +117,24 @@ export class VotingAPI implements DeployedVotingAPI {
   readonly deployedContractAddress: ContractAddress;
   readonly state$: Observable<VotingDerivedState>;
 
-  async castA(): Promise<void> {
+  async castA(onProgress?: ProofProgressCallback): Promise<void> {
     this.logger?.info('castA: casting vote for Option A');
-    const txData = await this.deployedContract.callTx.castA();
-    this.logger?.trace({ circuit: 'castA', txHash: txData.public.txHash });
+    await callCastACircuit(this.deployedContract, onProgress, this.logger);
   }
 
-  async castB(): Promise<void> {
+  async castB(onProgress?: ProofProgressCallback): Promise<void> {
     this.logger?.info('castB: casting vote for Option B');
-    const txData = await this.deployedContract.callTx.castB();
-    this.logger?.trace({ circuit: 'castB', txHash: txData.public.txHash });
+    await callCastBCircuit(this.deployedContract, onProgress, this.logger);
   }
 
-  async castC(): Promise<void> {
+  async castC(onProgress?: ProofProgressCallback): Promise<void> {
     this.logger?.info('castC: casting vote for Option C');
-    const txData = await this.deployedContract.callTx.castC();
-    this.logger?.trace({ circuit: 'castC', txHash: txData.public.txHash });
+    await callCastCCircuit(this.deployedContract, onProgress, this.logger);
   }
 
-  async closeVoting(): Promise<void> {
+  async closeVoting(onProgress?: ProofProgressCallback): Promise<void> {
     this.logger?.info('closeVoting: closing the poll');
-    const txData = await this.deployedContract.callTx.closeVoting();
-    this.logger?.trace({ circuit: 'closeVoting', txHash: txData.public.txHash });
+    await callCloseVotingCircuit(this.deployedContract, onProgress, this.logger);
   }
 
   // ─── Static factory methods ─────────────────────────────────────────────
@@ -182,3 +187,5 @@ export class VotingAPI implements DeployedVotingAPI {
 
 export * as utils from './utils/index.js';
 export * from './common-types.js';
+export * from './wallet.js';
+export * from './circuit-calls.js';

@@ -8,6 +8,8 @@ import { useDeployedVotingContext } from './hooks';
 import { type VotingDeployment } from './contexts';
 import { type Observable } from 'rxjs';
 import LockIcon from '@mui/icons-material/Lock';
+import type { InitialAPI, ConnectedAPI } from '@midnight-ntwrk/dapp-connector-api';
+import type { MidnightNetworkProvider } from '@midnight-ntwrk/midnight-js-network-provider';
 
 /**
  * Root Voting DApp component.

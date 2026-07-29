@@ -3,3 +3,4 @@
 
 export * from './Layout';
 export * from './VotingCard';
+export * from './WalletConnect';

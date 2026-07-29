@@ -207,6 +207,7 @@ export const VotingCard: React.FC<Readonly<VotingCardProps>> = ({ votingDeployme
   const [errorMessage, setErrorMessage] = useState<string>();
   const [votingState, setVotingState] = useState<VotingDerivedState>();
   const [isWorking, setIsWorking] = useState(!!votingDeployment$);
+  const [proofStatusText, setProofStatusText] = useState('Generating ZK Proof…');
   const [copied, setCopied] = useState(false);
 
   const onDeployCallback = useCallback(
@@ -218,34 +219,46 @@ export const VotingCard: React.FC<Readonly<VotingCardProps>> = ({ votingDeployme
     [votingAPIProvider],
   );
 
+  const handleProofProgress = useCallback((progress: { phase: string; txHash?: string }) => {
+    if (progress.phase === 'generating-proof') {
+      setProofStatusText('Generating ZK Proof on local prover server…');
+    } else if (progress.phase === 'submitting-tx') {
+      setProofStatusText('Submitting ZK transaction to Midnight Network…');
+    } else if (progress.phase === 'finalized') {
+      setProofStatusText('Transaction finalized on-chain!');
+    }
+  }, []);
+
   const onVote = useCallback(
     async (option: 'A' | 'B' | 'C') => {
       if (!deployedAPI) return;
       try {
         setIsWorking(true);
-        if (option === 'A') await deployedAPI.castA();
-        else if (option === 'B') await deployedAPI.castB();
-        else await deployedAPI.castC();
+        setProofStatusText('Generating ZK Proof…');
+        if (option === 'A') await deployedAPI.castA(handleProofProgress);
+        else if (option === 'B') await deployedAPI.castB(handleProofProgress);
+        else await deployedAPI.castC(handleProofProgress);
       } catch (e) {
         setErrorMessage(e instanceof Error ? e.message : String(e));
       } finally {
         setIsWorking(false);
       }
     },
-    [deployedAPI],
+    [deployedAPI, handleProofProgress],
   );
 
   const onCloseVoting = useCallback(async () => {
     if (!deployedAPI) return;
     try {
       setIsWorking(true);
-      await deployedAPI.closeVoting();
+      setProofStatusText('Generating ZK Proof for closing poll…');
+      await deployedAPI.closeVoting(handleProofProgress);
     } catch (e) {
       setErrorMessage(e instanceof Error ? e.message : String(e));
     } finally {
       setIsWorking(false);
     }
-  }, [deployedAPI]);
+  }, [deployedAPI, handleProofProgress]);
 
   const onCopyAddress = useCallback(async () => {
     if (deployedAPI?.deployedContractAddress) {
@@ -299,8 +312,8 @@ export const VotingCard: React.FC<Readonly<VotingCardProps>> = ({ votingDeployme
       >
         <Box sx={{ textAlign: 'center' }}>
           <CircularProgress data-testid="voting-working-indicator" sx={{ color: '#7C3AED' }} />
-          <Typography variant="caption" sx={{ display: 'block', mt: 1 }}>
-            Generating ZK Proof…
+          <Typography variant="caption" sx={{ display: 'block', mt: 1, px: 2 }}>
+            {proofStatusText}
           </Typography>
         </Box>
       </Backdrop>

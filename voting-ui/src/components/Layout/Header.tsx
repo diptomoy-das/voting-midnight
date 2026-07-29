@@ -5,6 +5,7 @@ import React from 'react';
 import { AppBar, Toolbar, Typography, Box, Chip, alpha } from '@mui/material';
 import HowToVoteIcon from '@mui/icons-material/HowToVote';
 import LockIcon from '@mui/icons-material/Lock';
+import { WalletConnect } from '../WalletConnect';
 
 const Header: React.FC = () => {
   return (
@@ -53,19 +54,23 @@ const Header: React.FC = () => {
           </Box>
         </Box>
 
-        {/* Privacy badge */}
-        <Chip
-          icon={<LockIcon sx={{ fontSize: '14px !important' }} />}
-          label="Zero-Knowledge Privacy"
-          size="small"
-          sx={{
-            background: alpha('#7C3AED', 0.15),
-            border: `1px solid ${alpha('#7C3AED', 0.4)}`,
-            color: '#A78BFA',
-            fontWeight: 500,
-            fontSize: '0.7rem',
-          }}
-        />
+        {/* Right action bar: Privacy badge + Wallet connect */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Chip
+            icon={<LockIcon sx={{ fontSize: '14px !important' }} />}
+            label="Zero-Knowledge Privacy"
+            size="small"
+            sx={{
+              display: { xs: 'none', sm: 'inline-flex' },
+              background: alpha('#7C3AED', 0.15),
+              border: `1px solid ${alpha('#7C3AED', 0.4)}`,
+              color: '#A78BFA',
+              fontWeight: 500,
+              fontSize: '0.7rem',
+            }}
+          />
+          <WalletConnect />
+        </Box>
       </Toolbar>
     </AppBar>
   );
