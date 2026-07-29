@@ -40,6 +40,13 @@ export const WalletConnect: React.FC = () => {
     setStatus('connecting');
     setErrorMsg(null);
     try {
+      if (connectedAPI) {
+        try {
+          await disconnectLaceWallet(connectedAPI);
+        } catch {
+          // Ignore pre-connect disconnect errors
+        }
+      }
       const netId = (import.meta.env.VITE_NETWORK_ID as string) || 'preprod';
       const api = await connectLaceWallet(undefined, netId);
       setConnectedAPI(api);
@@ -55,7 +62,7 @@ export const WalletConnect: React.FC = () => {
       const msg = err instanceof Error ? err.message : String(err);
       setErrorMsg(msg);
     }
-  }, []);
+  }, [connectedAPI]);
 
   const handleDisconnect = useCallback(async () => {
     try {

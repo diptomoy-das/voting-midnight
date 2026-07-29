@@ -78,7 +78,16 @@ export const connectLaceWallet = async (
     throw new Error('Midnight 1AM / Lace wallet extension not found. Please install and enable the browser extension.');
   }
 
-  logger?.info({ networkId }, 'Initiating connection to Midnight Wallet');
+  // Attempt session cleanup on initial API if supported to ensure a fresh popup prompt
+  try {
+    if ('disconnect' in wallet && typeof (wallet as unknown as { disconnect: () => Promise<void> }).disconnect === 'function') {
+      await (wallet as unknown as { disconnect: () => Promise<void> }).disconnect();
+    }
+  } catch (e) {
+    logger?.trace({ e }, 'Pre-connect cleanup notice');
+  }
+
+  logger?.info({ networkId }, 'Initiating fresh connection request to Midnight Wallet');
 
   const connectPromise = wallet.connect(networkId);
   const timeoutPromise = new Promise<never>((_, reject) =>
@@ -86,7 +95,7 @@ export const connectLaceWallet = async (
       () =>
         reject(
           new Error(
-            'Wallet connection request timed out. Please check if the extension popup window is waiting for authorization.',
+            'Wallet connection request timed out. Please check if the 1AM extension popup window is waiting for authorization.',
           ),
         ),
       30000,
